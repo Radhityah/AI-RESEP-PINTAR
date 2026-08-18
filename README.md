@@ -1,7 +1,7 @@
 # AI-RESEP-PINTAR (ResepPintar)
 
 > **Proyek Pengembangan Sistem Penyimpanan Data Skalabel** — Mata Kuliah Sistem Basis Data Modern
-> **Kelompok 9**: Radhityah Walhidayah (105841102724) · Muhammad Abdul Farid (105841100724) · Ibnu Arshysyahnan Mustafa (105841101724)
+> **Kelompok 9**: Radhityah Walhidayah (105841102724) · Muhammad Abdul Farid (105841100724) · Ibnu Arshysyahnan Mustafa (105841101724) · Muliyadi. H (105841102524)
 
 **ResepPintar** adalah platform resep masakan berbasis AI: membuat resep dari bahan yang dimiliki, mencari resep dari nama makanan (dengan deteksi input ambigu), menyimpan koleksi resep beserta foto, dan chat dengan AI (ChefBot).
 
