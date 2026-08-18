@@ -1,0 +1,93 @@
+# ═══════════════════════════════════════════════════════════════
+# ResepPintar — Docker Compose
+#   Jalankan semua: docker compose up -d --build
+#
+#   Web (Next.js)   : http://localhost:3000
+#   API + Swagger   : http://localhost:4000/docs
+#   MinIO Console   : http://localhost:9001  (minioadmin/minioadmin)
+#   MongoDB         : mongodb://localhost:27017
+#   Ollama lokal    : http://localhost:11434
+#
+#   AI: server kampus https://ollama.if.unismuh.ac.id (sesuai tugas)
+#       fallback otomatis → Ollama di host → container ollama
+# ═══════════════════════════════════════════════════════════════
+
+services:
+
+  mongodb:
+    image: mongo:7
+    container_name: resep-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: resep-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: resep-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+  api:
+    build: ./backend
+    container_name: resep-api
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: 4000
+      MONGODB_URI: mongodb://mongodb:27017/resep-pintar
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_USE_SSL: "false"
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: resep-pintar
+      MINIO_PUBLIC_URL: http://localhost:9000
+      # AI sesuai tugas: server Ollama kampus, dengan fallback otomatis
+      OLLAMA_BASE_URL: https://ollama.if.unismuh.ac.id
+      OLLAMA_FALLBACK_URL: http://host.docker.internal:11434,http://ollama:11434
+      OLLAMA_MODEL: llama3.2
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - mongodb
+      - minio
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      args:
+        API_PROXY_URL: http://api:4000
+    container_name: resep-web
+    ports:
+      - "3000:3000"
+    environment:
+      API_PROXY_URL: http://api:4000
+      NEXT_PUBLIC_MINIO_URL: http://localhost:9000
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
+  minio_data:
+  ollama_data:
